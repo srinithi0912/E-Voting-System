@@ -1,0 +1,223 @@
+﻿@model IEnumerable<EVotingSystem.Models.Candidate>
+@{
+    ViewData["Title"] = "Voter Dashboard";
+    bool isEligible = ViewBag.IsVotingEligible ?? false;
+    bool hasVoted = ViewBag.HasVoted ?? false;
+}
+
+<!-- Import Outfit Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="container mt-3" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem;">
+    <!-- Header -->
+    <div class="position-relative mb-4 text-center">
+        <h2 class="m-0 fw-bold text-dark" style="font-size: 2.2rem; letter-spacing: -0.5px;">E - Voting System</h2>
+        
+        <div class="position-absolute top-50 end-0 translate-middle-y d-flex align-items-center gap-2" style="z-index: 1050;">
+            <span class="badge bg-light text-dark border fs-6" id="votingCountdown">Loading Timer...</span>
+            
+            <!-- Dropdown with high z-index to overlay above alerts/banners -->
+            <div class="dropdown" style="position: relative; z-index: 1055;">
+                <button class="btn btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-family: inherit; font-size: 1.1rem;">
+                    Settings (@ViewBag.VoterName)
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" style="font-family: inherit; font-size: 1.1rem; z-index: 1060;">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Update Profile</a></li>
+                    <li><a class="dropdown-item text-danger fw-semibold" asp-controller="Account" asp-action="Logout">LogOut</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Banner (z-index set lower than dropdown) -->
+    @if (!isEligible)
+    {
+        <div class="alert alert-warning text-center fw-bold shadow-sm mb-4" role="alert" style="font-size: 1.2rem; background-color: #fff3cd; border-color: #ffebaaca; color: #856404; position: relative; z-index: 1;">
+            Voting is currently CLOSED. Voting hours are strictly from 7:00 AM to 5:00 PM.
+        </div>
+    }
+
+    @if (TempData["VoteStatus"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert" style="font-size: 1.1rem;">
+            @TempData["VoteStatus"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Search Form -->
+    <form method="get" asp-action="Dashboard" class="row g-2 mb-4">
+        <div class="col-auto">
+            <input type="text" name="searchString" class="form-control" placeholder="Search Candidate / Party" style="font-family: inherit; font-size: 1.1rem;" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-light border fw-semibold" style="font-family: inherit; font-size: 1.1rem;">Search</button>
+        </div>
+    </form>
+
+    <!-- Candidate Table -->
+    <h4 class="mb-3 fw-bold text-dark" style="font-size: 1.6rem;">List all the candidates</h4>
+    <form id="voteSelectionForm">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle shadow-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;" class="text-center fw-semibold">Select</th>
+                        <th class="fw-semibold">Candidate Name</th>
+                        <th class="fw-semibold">Party Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input type="radio" name="selectedCandidate" value="@item.CandidateId" 
+                                           data-name="@item.Name" data-party="@item.Party" 
+                                           class="form-check-input" @(!isEligible || hasVoted ? "disabled" : "") />
+                                </td>
+                                <td>@item.Name</td>
+                                <td>@item.Party</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No candidates available.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vote Action Button -->
+        <div class="mt-3 text-end">
+            @if (!isEligible)
+            {
+                <button type="button" class="btn btn-light border px-4 fw-semibold" disabled style="font-size: 1.1rem;">Voting Closed</button>
+            }
+            else if (hasVoted)
+            {
+                <button type="button" class="btn btn-light border px-4 fw-semibold" disabled style="font-size: 1.1rem;">Already Voted</button>
+            }
+            else
+            {
+                <button type="button" class="btn text-dark px-4 fw-bold shadow-sm" style="background-color: #d4edda; border-color: #c3e6cb; font-size: 1.1rem;" onclick="triggerVoteModal()">Vote</button>
+            }
+        </div>
+    </form>
+</div>
+
+<!-- Vote Modal -->
+<div class="modal fade" id="voteModal" tabindex="-1" style="font-family: 'Outfit', sans-serif;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="CastVote" method="post">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Confirm Your Vote</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="font-size: 1.1rem;">
+                    <input type="hidden" id="modalCandidateId" name="candidateId" />
+                    <div class="mb-2">
+                        <strong>Candidate Name:</strong> <span id="modalCandidateName"></span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Party:</strong> <span id="modalPartyName"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn text-dark fw-bold" style="background-color: #d4edda; border-color: #c3e6cb; font-size: 1.05rem;">Confirm</button>
+                    <button type="button" class="btn text-dark" style="background-color: #f8d7da; border-color: #f5c6cb; font-size: 1.05rem;" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" style="font-family: 'Outfit', sans-serif;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpdateProfile" method="post">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Update Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="font-size: 1.1rem;">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Name:</label>
+                        <input type="text" name="name" class="form-control" value="@ViewBag.VoterName" required style="font-size: 1.05rem;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Location:</label>
+                        <input type="text" name="location" class="form-control" value="@ViewBag.VoterLocation" placeholder="Enter your voting location" required style="font-size: 1.05rem;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Password:</label>
+                        <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password" style="font-size: 1.05rem;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn text-dark fw-bold" style="background-color: #d4edda; border-color: #c3e6cb; font-size: 1.05rem;">Update</button>
+                    <button type="button" class="btn text-dark" style="background-color: #f8d7da; border-color: #f5c6cb; font-size: 1.05rem;" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerVoteModal() {
+        const selected = document.querySelector('input[name="selectedCandidate"]:checked');
+        if (!selected) {
+            alert('Please select a candidate first before clicking Vote.');
+            return;
+        }
+
+        document.getElementById('modalCandidateId').value = selected.value;
+        document.getElementById('modalCandidateName').innerText = selected.getAttribute('data-name');
+        document.getElementById('modalPartyName').innerText = selected.getAttribute('data-party');
+
+        var modal = new bootstrap.Modal(document.getElementById('voteModal'));
+        modal.show();
+    }
+
+    function updateVotingTimer() {
+        const timerElement = document.getElementById("votingCountdown");
+        if (!timerElement) return;
+
+        const now = new Date();
+        const closingTime = new Date();
+        closingTime.setHours(17, 0, 0, 0);
+
+        const openingTime = new Date();
+        openingTime.setHours(7, 0, 0, 0);
+
+        if (now < openingTime) {
+            const diff = openingTime - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            timerElement.innerText = `Opens in: ${hours}h ${minutes}m ${seconds}s`;
+        } 
+        else if (now >= openingTime && now <= closingTime) {
+            const diff = closingTime - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            timerElement.innerText = `Time Left: ${hours}h ${minutes}m ${seconds}s`;
+        } 
+        else {
+            timerElement.innerText = "Voting Closed for Today";
+        }
+    }
+
+    updateVotingTimer();
+    setInterval(updateVotingTimer, 1000);
+</script>

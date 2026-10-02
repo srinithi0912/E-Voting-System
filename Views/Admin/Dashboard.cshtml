@@ -1,0 +1,166 @@
+﻿@model IEnumerable<EVotingSystem.Controllers.CandidateResultViewModel>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<!-- Import LeetCode Style Geometric Sans Font (Outfit) from Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- CHANGE BASE FONT SIZE HERE (e.g., 1.25rem or 20px to make it even bigger) -->
+<div class="container mt-4" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem;">
+    <!-- Header with Title and Top Right Dropdown Options -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <!-- HEADER TITLE SIZE -->
+        <h2 class="m-0 fw-bold text-dark" style="font-size: 2.2rem; letter-spacing: -0.5px;">E - Voting System</h2>
+
+        <div class="d-flex align-items-center gap-2">
+            <!-- Options Dropdown at Top Right (Light Grey) -->
+            <div class="dropdown">
+                <button class="btn btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1rem;">
+                    Options
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-family: inherit; font-size: 1.1rem;">
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addCandidateModal">
+                            Add Candidate
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#removeCandidateModal">
+                            Remove Candidate
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Button (Light Red) -->
+            <a asp-controller="Account" asp-action="Logout" class="btn text-dark fw-semibold" style="background-color: #f8d7da; border-color: #f5c6cb; font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1rem;">Logout</a>
+        </div>
+    </div>
+
+    <!-- Results Overview Card Section -->
+    <div class="row mb-4">
+        <!-- Winner Party Card (Light Green) -->
+        <div class="col-md-6 mb-2">
+            <div class="card border shadow-sm" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724;">
+                <div class="card-body">
+                    <!-- CARD LABEL SIZE -->
+                    <h6 class="card-title fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 1.1rem;">Winner Party:</h6>
+                    <!-- CARD VALUE SIZE -->
+                    <h2 class="card-text fw-bold m-0" style="font-size: 2.2rem;">@ViewBag.WinnerParty</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opponent Party Card (Light Violet) -->
+        <div class="col-md-6 mb-2">
+            <div class="card border shadow-sm" style="background-color: #e2d9f3; border-color: #d0c2e8; color: #4a235a;">
+                <div class="card-body">
+                    <!-- CARD LABEL SIZE -->
+                    <h6 class="card-title fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 1.1rem;">Opponent Party:</h6>
+                    <!-- CARD VALUE SIZE -->
+                    <h2 class="card-text fw-bold m-0" style="font-size: 2.2rem;">@ViewBag.OpponentParty</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Results Table -->
+    <!-- SECTION HEADING SIZE -->
+    <h4 class="mb-3 fw-bold text-dark" style="font-size: 1.6rem;">Live Voting Results</h4>
+    <table class="table table-bordered align-middle shadow-sm" style="font-size: 1.15rem;">
+        <thead class="table-light">
+            <tr>
+                <th class="fw-semibold">Candidate Name</th>
+                <th class="fw-semibold">Party Name</th>
+                <th class="fw-semibold">Vote Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.CandidateName</td>
+                        <td>@item.PartyName</td>
+                        <td><span class="badge border text-dark" style="background-color: #e2e3e5; font-family: inherit; font-size: 1.1rem; padding: 0.4rem 0.8rem;">@item.VoteCount</span></td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No candidates available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal: Add Candidate -->
+<div class="modal fade" id="addCandidateModal" tabindex="-1" aria-hidden="true" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddCandidate" method="post">
+                <div class="modal-header bg-light">
+                    <h4 class="modal-title fw-bold text-dark" style="font-size: 1.5rem;">Add Candidate</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Candidate Name:</label>
+                        <input type="text" name="Name" class="form-control" required placeholder="Enter candidate name" style="font-family: inherit; font-size: 1.1rem; padding: 0.5rem 0.75rem;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Party Name:</label>
+                        <input type="text" name="Party" class="form-control" required placeholder="Enter party name" style="font-family: inherit; font-size: 1.1rem; padding: 0.5rem 0.75rem;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- Light Green for Save -->
+                    <button type="submit" class="btn text-dark fw-semibold" style="background-color: #d4edda; border-color: #c3e6cb; font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1.25rem;">Save</button>
+                    <!-- Light Red for Cancel -->
+                    <button type="button" class="btn text-dark" style="background-color: #f8d7da; border-color: #f5c6cb; font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1.25rem;" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Remove Candidate -->
+<div class="modal fade" id="removeCandidateModal" tabindex="-1" aria-hidden="true" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RemoveCandidate" method="post">
+                <div class="modal-header bg-light">
+                    <h4 class="modal-title fw-bold text-dark" style="font-size: 1.5rem;">Remove Candidate</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Select Candidate to Remove:</label>
+                        <select name="candidateId" class="form-select" required style="font-family: inherit; font-size: 1.1rem; padding: 0.5rem 0.75rem;">
+                            <option value="">-- Select Candidate --</option>
+                            @if (Model != null)
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    <option value="@item.CandidateId">@item.CandidateName (@item.PartyName)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- Light Red for Remove -->
+                    <button type="submit" class="btn text-dark fw-semibold" style="background-color: #f8d7da; border-color: #f5c6cb; font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1.25rem;" onclick="return confirm('Are you sure you want to remove this candidate?');">Remove</button>
+                    <!-- Light Grey for Cancel -->
+                    <button type="button" class="btn btn-light border text-dark" style="font-family: inherit; font-size: 1.1rem; padding: 0.5rem 1.25rem;" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

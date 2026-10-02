@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "E - Voting System";
+}
+
+<!-- Import LeetCode Style Geometric Sans Font (Outfit) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;">
+    <div class="card shadow-sm border p-4 text-center" style="width: 100%; max-width: 400px; background-color: #ffffff; border-color: #dee2e6;">
+        
+        <!-- Main Title -->
+        <h2 class="fw-bold text-dark mb-4" style="font-size: 2.2rem; letter-spacing: -0.5px;">E - Voting System</h2>
+
+        <!-- Role Selection Buttons -->
+        <div class="d-grid gap-3">
+            <!-- Admin Button (Light Violet Accent) -->
+            <a asp-controller="Account" asp-action="AdminLogin" class="btn text-dark fw-semibold shadow-sm" style="background-color: #e2d9f3; border-color: #d0c2e8; font-size: 1.2rem; padding: 0.75rem;">
+                Admin
+            </a>
+            
+            <!-- Voter Button (Light Green Accent) -->
+            <a asp-controller="Account" asp-action="VoterLogin" class="btn text-dark fw-semibold shadow-sm" style="background-color: #d4edda; border-color: #c3e6cb; font-size: 1.2rem; padding: 0.75rem;">
+                Voter
+            </a>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Voter Login";
+}
+
+<div class="container mt-5" style="max-width: 400px;">
+    <div class="text-center mb-3">
+        <h4 class="fw-bold text-dark">E - Voting System</h4>
+    </div>
+
+    <div class="card border shadow-sm">
+        <div class="card-header bg-light text-dark text-center py-2 border-bottom">
+            <h5 class="m-0 fw-bold">Voter Login</h5>
+        </div>
+        <div class="card-body p-4">
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger py-2">@ViewBag.Error</div>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success py-2">@TempData["Success"]</div>
+            }
+
+            <form asp-action="VoterLogin" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark">Voter Id:</label>
+                    <input type="number" name="voterId" class="form-control" placeholder="Enter Voter Id" required />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark">Password:</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter Password" required />
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Light Grey Button for Register -->
+                    <a asp-action="Register" class="btn btn-light border">Register</a>
+                    <!-- Light Green Button for Login -->
+                    <button type="submit" class="btn text-dark px-4" style="background-color: #d4edda; border-color: #c3e6cb;">Login</button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-center bg-light border-top">
+            <a asp-action="Login" class="text-secondary text-decoration-none small">&larr; Back to Role Selection</a>
+        </div>
+    </div>
+</div>
